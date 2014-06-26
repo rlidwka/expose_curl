@@ -13,7 +13,7 @@ module.exports.catch_outgoing_http = function(callback) {
 			for (var h in this._headers) {
 				headers[this._headerNames[h]] = this._headers[h]
 			}
-			this._expose_curl_ee.emit('headers', headers)
+			this._expose_curl_ee.emit('request', this.method, this.path, headers)
 		}
 		return this._expose_curl_ee
 	}
@@ -54,7 +54,42 @@ module.exports.catch_incoming_http = function(callback) {
 				ee.emit('end')
 			}
 		}
-		ee.emit('headers', req.headers)
+		ee.emit('request', req.method, req.url, req.headers)
 	}
+}
+
+module.exports._format_curl = function(method, path, headers, data) {
+	var host = 'localhost'
+	var result = ''
+	if (method.toUpperCase() !== 'GET') result += ' -X '+method
+	for (var k in headers) {
+		if (k.toLowerCase() === 'host') host = headers[k]
+		result += " -H '" + k + ': ' + headers[k] + "'"
+	}
+	if (data != null) {
+		result += " -d '" + data + "'"
+	}
+	return 'curl -i http://' + host + path + result
+}
+
+module.exports.request_to_curl = function(ee, callback) {
+	var headers = {}, path = '/', method = 'GET', data = []
+	ee.on('request', function(m, p, h) {
+		method = m
+		path = p
+		headers = h
+	})
+	ee.on('data', function(d, enc) {
+		if (!Buffer.isBuffer(d)) {
+			d = new Buffer(d, enc)
+		}
+		data.push(d)
+	})
+	ee.on('end', function() {
+		var str = module.exports._format_curl(
+			method, path, headers, (data.length ? Buffer.concat(data) : null)
+		)
+		callback(str)
+	})
 }
 

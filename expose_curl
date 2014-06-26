@@ -1,0 +1,28 @@
+#!/usr/bin/env node
+// vim:syntax=javascript
+
+var which = require('which')
+var exe = process.argv[2]
+process.argv.splice(1, 1)
+
+if (process.argv.length < 2) {
+	console.log('Usage: expose_curl whatever.js')
+	process.exit(1)
+}
+
+if (~exe.indexOf('/')) {
+	exe = './' + exe
+} else {
+	exe = which.sync(exe)
+}
+
+var ec = require('./')
+ec.catch_outgoing_http(function(ee) {
+	ec.request_to_curl(ee, console.log)
+})
+ec.catch_incoming_http(function(ee) {
+	ec.request_to_curl(ee, console.log)
+})
+
+require(exe)
+

@@ -1,5 +1,9 @@
 var assert = require('assert')
 
+require('../').catch_outgoing_http(function(ee) {
+	require('../').request_to_curl(ee, console.log)
+})
+
 require('http').createServer(function(req, res) {
 	var data = ''
 	req.setEncoding('utf8')

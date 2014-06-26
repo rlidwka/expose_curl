@@ -1,5 +1,9 @@
 var assert = require('assert')
 
+require('../').catch_incoming_http(function(ee) {
+	require('../').request_to_curl(ee, console.log)
+})
+
 require('./server')
 
 require('http').request({
@@ -14,7 +18,7 @@ require('http').request({
 		data += d
 	})
 	res.on('end', function() {
-		assert.equal(data, 'hello-bye-')
+		assert.equal(data, 'hello-74657374-bye-')
 		console.log('ok')
 		process.exit()
 	})

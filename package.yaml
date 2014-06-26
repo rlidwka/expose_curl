@@ -1,0 +1,42 @@
+# use "yapm install ." if you're installing this from git repository
+
+name: expose_curl
+version: 0.1.0
+description: tool to trace and replay http requests
+
+author:
+  name: Alex Kocharin
+  email: alex@kocharin.ru
+
+repository:
+  type: git
+  url: git://github.com/rlidwka/expose_curl
+
+bin: ./expose_curl
+
+dependencies:
+  which: '*'
+
+bundledDependencies:
+  - which
+
+keywords:
+  - http
+  - trace
+  - curl
+
+scripts:
+  test: node test/test_server.js && node test/test_client.js
+
+engines:
+  node: '>=0.10'
+
+preferGlobal: true
+
+publishConfig:
+  registry: https://registry.npmjs.org/
+
+license:
+  type: WTFPL
+  url: http://www.wtfpl.net/txt/copying/
+

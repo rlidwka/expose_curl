@@ -100,17 +100,17 @@ module.exports._shell_escape = function(data) {
 module.exports._format_curl = function(method, path, headers, data) {
 	var host = 'localhost'
 	var result = ''
-	var sh_escape = module.exports._shell_escape
+	var escape = module.exports._shell_escape
 
-	if (method.toUpperCase() !== 'GET') result += ' -X '+method
+	if (method.toUpperCase() !== 'GET') result += ' -X ' + escape(method)
 	for (var k in headers) {
 		if (k.toLowerCase() === 'host') host = headers[k]
-		result += " -H '" + k + ': ' + headers[k] + "'"
+		result += " -H " + escape(k + ': ' + headers[k])
 	}
 	if (data != null) {
-		result += " -d '" + data + "'"
+		result += " -d " + escape(data)
 	}
-	return 'curl -i http://' + host + path + result
+	return 'curl -i ' + escape('http://' + host + path) + result
 }
 
 module.exports.request_to_curl = function(ee, callback) {

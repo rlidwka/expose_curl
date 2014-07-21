@@ -2,6 +2,7 @@
 // vim:syntax=javascript
 
 var which = require('which')
+var path = require('path')
 var exe = process.argv[2]
 process.argv.splice(1, 1)
 
@@ -11,7 +12,7 @@ if (process.argv.length < 2) {
 }
 
 if (~exe.indexOf('/')) {
-	exe = './' + exe
+	exe = path.resolve(process.cwd(), exe)
 } else {
 	exe = which.sync(exe)
 }

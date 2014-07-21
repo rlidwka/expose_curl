@@ -58,9 +58,50 @@ module.exports.catch_incoming_http = function(callback) {
 	}
 }
 
+module.exports._shell_escape = function(data) {
+	if (!data.toString('utf8').match(/^[\040-\176]*$/)) {
+		// the data is binary
+		if (!Buffer.isBuffer(data)) data = new Buffer(data, 'utf8')
+
+		var result = ''
+		for (var i=0; i<data.length; i++) {
+			if (data[i] === 0) {
+				// do nothing... bash doesn't support null character
+			} else if (data[i] >= 040 && data[i] <= 0176) {
+				result += String.fromCharCode(data[i])
+			} else {
+				result += '\\x' + data[i].toString(16)
+			}
+		}
+
+		return "$'" + result + "'"
+	} else {
+		// the data is ascii
+		data = data.toString('utf8')
+
+		// special case: empty string
+		if (data.length === 0) return '""'
+
+		if (data.match(/^[A-Za-z0-9/:._-]+$/)) {
+			return data
+		}
+
+		// replace single quotes with '\''
+		data = "'" + data.replace(/'/g, "'\\''") + "'"
+
+		// get rid of empty substrings
+		data = data.replace(/''\\'/g, "\\'")
+		data = data.replace(/\\'''/g, "\\'")
+
+		return data
+	}
+}
+
 module.exports._format_curl = function(method, path, headers, data) {
 	var host = 'localhost'
 	var result = ''
+	var sh_escape = module.exports._shell_escape
+
 	if (method.toUpperCase() !== 'GET') result += ' -X '+method
 	for (var k in headers) {
 		if (k.toLowerCase() === 'host') host = headers[k]

@@ -16,9 +16,11 @@ bin: ./expose_curl
 
 dependencies:
   which: '*'
+  commander: '2.3.0-expose-curl'
 
 bundledDependencies:
   - which
+  - commander
 
 keywords:
   - http

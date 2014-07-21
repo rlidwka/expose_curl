@@ -3,13 +3,41 @@
 
 var which = require('which')
 var path = require('path')
-var exe = process.argv[2]
-process.argv.splice(1, 1)
+var commander = require('commander')
 
-if (process.argv.length < 2) {
-	console.log('Usage: expose_curl whatever.js')
-	process.exit(1)
+commander
+	.option('-g, --grep <pattern>', 'Filter using regexp')
+	.option('-i, --inbound',        'Log inbound requests only')
+	.option('-o, --outbound',       'Log outbound requests only')
+	.option('-h, --help',           'Display this help')
+	.usage('[our_options] <file_to_trace> [their_options]')
+
+commander.commandHelp = function() {
+	return ''
 }
+
+commander.parse(process.argv)
+
+commander.on('--help', function(){
+	console.log('  Example:');
+	console.log('');
+	console.log('  This would run "npm install -g yapm" and print out all requests');
+	console.log('  that have "registry.npmjs.org" mentioned somewhere:');
+	console.log('')
+	console.log("  $ expose_curl -g registry.npmjs.org npm install -g yapm");
+	console.log('');
+})
+
+if (commander.args.length === 0 || commander.H) {
+	commander.outputHelp()
+	return
+}
+
+var argv_0 = process.argv[0]
+process.argv = commander.args.slice(0)
+process.argv.unshift(argv_0)
+
+var exe = process.argv[1]
 
 if (~exe.indexOf('/')) {
 	exe = path.resolve(process.cwd(), exe)

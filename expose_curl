@@ -7,8 +7,8 @@ var commander = require('commander')
 
 commander
 	.option('-g, --grep <pattern>', 'Filter using regexp')
-	.option('-i, --inbound',        'Log inbound requests only')
-	.option('-o, --outbound',       'Log outbound requests only')
+	.option('-i, --incoming',       'Log inbound requests only')
+	.option('-o, --outgoing',       'Log outbound requests only')
 	.option('-h, --help',           'Display this help')
 	.usage('[our_options] <file_to_trace> [their_options]')
 
@@ -46,12 +46,47 @@ if (~exe.indexOf('/')) {
 }
 
 var ec = require('./')
-ec.catch_outgoing_http(function(ee) {
-	ec.request_to_curl(ee, console.log)
-})
-ec.catch_incoming_http(function(ee) {
-	ec.request_to_curl(ee, console.log)
-})
+
+// if neither -i nor -o present, presume -io
+if (commander.outgoing == null && commander.incoming == null) {
+	commander.outgoing = commander.incoming = true
+}
+
+function color_grep(pattern, line) {
+	var matches = false
+	var m = null
+	var colored = ''
+	var lastIndex = pattern.lastIndex = 0
+	while(m = pattern.exec(line)) {
+		matches = true
+		colored += line.substr(lastIndex, pattern.lastIndex-lastIndex-m[0].length)
+		colored += '\033[01;31m\033[K' + line.substr(pattern.lastIndex-m[0].length, m[0].length) + '\033[m\033[K'
+		lastIndex = pattern.lastIndex
+	}
+	colored += line.substr(lastIndex)
+	return matches ? colored : null
+}
+
+if (commander.grep) {
+	var pattern = new RegExp(commander.grep, 'g')
+	var print = function(line) {
+		var res = color_grep(pattern, line)
+		if (res != null) console.log(res)
+	}
+} else {
+	var print = console.log
+}
+
+if (commander.outgoing) {
+	ec.catch_outgoing_http(function(ee) {
+		ec.request_to_curl(ee, print)
+	})
+}
+if (commander.incoming) {
+	ec.catch_incoming_http(function(ee) {
+		ec.request_to_curl(ee, print)
+	})
+}
 
 require(exe)
 

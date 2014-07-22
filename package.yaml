@@ -1,7 +1,7 @@
 # use "yapm install ." if you're installing this from git repository
 
 name: expose_curl
-version: 0.2.0
+version: 0.3.0
 description: tool to trace and replay http requests
 
 author:
